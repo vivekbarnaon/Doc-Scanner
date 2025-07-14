@@ -98,7 +98,8 @@ local.settings.json
 **/invoice*
 **/document*
 **/receipt*
-**/scan*
+**/scanned_*
+**/scan_*
 **/photo*
 **/image*
 **/*.jpg
