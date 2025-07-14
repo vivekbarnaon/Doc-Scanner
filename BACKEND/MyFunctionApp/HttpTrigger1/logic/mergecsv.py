@@ -2,7 +2,7 @@
 # Run this cell first to install required packages
 #!pip install -q google-generativeai pandas python-dotenv ipython
 # import os
-# os.environ["GOOGLE_API_KEY"] = "AIzaSyDEYkoLR5ESvf1h1hetea8p8ILPxBKVL2Q"
+# os.environ["GOOGLE_API_KEY"] = 
 
 
 
