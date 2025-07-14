@@ -34,8 +34,8 @@ const LandingPage: React.FC = () => {
 
   const isAuthenticated = !!currentUser;
   const fullText = isAuthenticated
-    ? `Welcome back, ${currentUser?.displayName || 'User'}! 🎉`
-    : 'Transform Documents with AI Magic ✨';
+    ? `Welcome back, ${currentUser?.displayName || 'User'}! `
+    : 'Transform Documents with AI Magic ';
 
   useEffect(() => {
     if (currentIndex < fullText.length) {

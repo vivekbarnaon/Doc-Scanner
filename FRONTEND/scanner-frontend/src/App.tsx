@@ -5,7 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import ApiStatus from './components/ApiStatus';
+// import ApiStatus from './components/ApiStatus';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage';
@@ -119,7 +119,7 @@ function App() {
             <Footer />
 
             {/* API Status - Only visible in development */}
-            <ApiStatus />
+            {/* <ApiStatus /> */}
           </Box>
         </ThemeProvider>
       </Router>
