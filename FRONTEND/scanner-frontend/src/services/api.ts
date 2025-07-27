@@ -2,7 +2,7 @@ import axios from 'axios';
 import { ProcessingType, ProcessingResult } from '../types/types';
 
 // Backend API configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || ' http://localhost:7071/api/processData';
 const AZURE_FUNCTION_KEY = process.env.REACT_APP_AZURE_FUNCTION_KEY;
 
 const api = axios.create({

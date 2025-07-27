@@ -5,18 +5,10 @@ azure-functions-worker
 # Environment Configuration
 python-dotenv==1.0.0
 
-# Data Processing
-pandas==2.1.4
 
-# PDF Processing
-gmft==0.4.2
-PyPDFium2>=4.30.0
-
-# AI/ML Libraries - Let pip resolve compatible versions
-grpcio
-grpcio-tools
 protobuf
 google-generativeai
 
 # File Processing
 Pillow==10.1.0
+
