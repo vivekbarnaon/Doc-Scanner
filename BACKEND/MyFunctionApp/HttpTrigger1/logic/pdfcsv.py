@@ -2,19 +2,10 @@
 #!pip list | grep gmft
 
 import os
-import gmft
-import gmft.table_detection
-import gmft.table_visualization
-import gmft.table_function
-import gmft.algorithm.structure
-import gmft.pdf_bindings.bindings_pdfium
-import gmft.pdf_bindings
-import gmft.common
 import pandas as pd
 
 from gmft.pdf_bindings import PyPDFium2Document
 from gmft import CroppedTable, TableDetector, AutoTableFormatter, AutoFormatConfig
-from gmft.algorithm.structure import *
 
 detector = TableDetector()
 
