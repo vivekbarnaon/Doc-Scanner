@@ -1,14 +1,5 @@
-# Azure Functions Core - Updated versions for better compatibility
-azure-functions
-azure-functions-worker
-
-# Environment Configuration
-python-dotenv==1.0.0
-
-
+gmft
+pandas
 protobuf
+python-dotenv
 google-generativeai
-
-# File Processing
-Pillow==10.1.0
-
