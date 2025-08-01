@@ -1,0 +1,94 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+/cypress/videos
+/cypress/screenshots
+/test-results/
+
+# production
+/build
+/dist
+
+# Environment Variables & Secrets (CRITICAL - Never commit these)
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env*.local
+
+# Firebase
+.firebase/
+firebase-debug.log*
+ui-debug.log*
+firebase-config.js
+firebase-config.ts
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+tsconfig.tsbuildinfo
+
+# Logs & Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log*
+*.log
+
+# IDE & Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Cache & Temporary files
+.eslintcache
+.cache/
+.temp/
+*.tmp
+*~
+
+# Build & Compilation
+/.next/
+.next/
+/out/
+/storybook-static/
+
+# Package Managers
+.npm
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# User specific files
+.npmrc
+.yarnrc
+
+# Project specific
+/public/uploads/
+/src/assets/temp/
+TODO.md
+NOTES.md
+
+# Never commit user data or uploads
+**/uploads/
+**/user_files/
+**/processed/
+**/temp/
