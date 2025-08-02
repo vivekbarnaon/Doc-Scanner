@@ -17,7 +17,8 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 import { ProcessingCardProps, ProcessingResult } from '../types/types';
-import { processFile } from '../services/api';
+// Naye, specific API functions ko import karein
+import { uploadFile, processUploadedFile, mergeCsvFiles } from '../services/api';
 
 const ProcessingCard: React.FC<ProcessingCardProps> = ({
   type,
@@ -31,32 +32,48 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
   onProcessingComplete,
   onProcessingError,
 }) => {
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
+  const onDrop = useCallback(async (droppedFiles: File[]) => {
+    if (droppedFiles.length === 0) return;
 
     onProcessingStart(type);
 
     try {
       let result: ProcessingResult;
+
+      // Alag-alag type ke liye alag logic
+      if (type === 'mergecsv') {
+        if (droppedFiles.length < 2) {
+          throw new Error('Please select at least two CSV files to merge.');
+        }
+        // Seedha merge function call karein
+        result = await mergeCsvFiles(droppedFiles[0], droppedFiles[1]);
+
+      } else if (type === 'imgtocsv' || type === 'pdfcsv') {
+        // Single file waale process ke liye
+        const fileToUpload = droppedFiles[0];
+        // Step 1: File upload karein
+        const uploadResult = await uploadFile(fileToUpload);
+        // Step 2: Uploaded file ko process karein
+        result = await processUploadedFile(uploadResult.file_id, uploadResult.filename, type);
       
-      if (multipleFiles && acceptedFiles.length >= 2) {
-        // For merge CSV, we need at least 2 files
-        result = await processFile(type, acceptedFiles);
       } else {
-        // For single file processing
-        result = await processFile(type, [acceptedFiles[0]]);
+        throw new Error(`Unsupported processing type: ${type}`);
       }
 
       onProcessingComplete(type, result);
     } catch (error: any) {
       onProcessingError(type, error.message || 'Processing failed');
     }
-  }, [type, multipleFiles, onProcessingStart, onProcessingComplete, onProcessingError]);
+  }, [type, onProcessingStart, onProcessingComplete, onProcessingError]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: acceptedFiles.split(',').reduce((acc, ext) => {
-      acc[`*/${ext.replace('.', '')}`] = [ext];
+      // Correctly format the accept object for react-dropzone
+      const mimeType = ext.includes('csv') ? 'text/csv' : 
+                       ext.includes('pdf') ? 'application/pdf' : 
+                       `image/${ext.replace('.', '')}`;
+      acc[mimeType] = [ext];
       return acc;
     }, {} as Record<string, string[]>),
     multiple: multipleFiles,
@@ -89,6 +106,7 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
     }
   };
 
+  // Baaki ka JSX code waisa hi rahega (No changes needed below this line)
   return (
     <Card
       sx={{
@@ -331,10 +349,10 @@ const ProcessingCard: React.FC<ProcessingCardProps> = ({
                 }}
               >
                 {isDragActive
-                  ? '📁 Drop files here'
+                  ? ' Drop files here'
                   : multipleFiles
-                  ? '📤 Upload Multiple Files'
-                  : '📤 Upload File'
+                  ? ' Upload Multiple Files'
+                  : 'Upload File'
                 }
               </Button>
             )}

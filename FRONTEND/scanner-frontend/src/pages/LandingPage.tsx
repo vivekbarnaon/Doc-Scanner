@@ -322,7 +322,7 @@ const LandingPage: React.FC = () => {
                 Quick Actions
               </Typography>
               <Grid container spacing={3} justifyContent="center">
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3} component="div">
                   <Button
                     fullWidth
                     variant="outlined"
@@ -344,7 +344,7 @@ const LandingPage: React.FC = () => {
                     </Box>
                   </Button>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3} component="div">
                   <Button
                     fullWidth
                     variant="outlined"
@@ -373,7 +373,7 @@ const LandingPage: React.FC = () => {
           {/* Feature Highlights */}
           <Grid container spacing={4} sx={{ mt: 4 }}>
             {highlights.map((highlight, index) => (
-              <Grid size={{ xs: 12, md: 4 }} key={index}>
+              <Grid item xs={12} md={4} key={index} component="div">
                 <Card
                   sx={{
                     background: 'rgba(255, 255, 255, 0.1)',

@@ -20,13 +20,13 @@ import {
   Paper,
   IconButton,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Download,
   Visibility,
   Close,
   FileDownload,
-  Schedule,
   CheckCircle,
   Error,
   Delete,
@@ -39,21 +39,19 @@ interface ProcessingHistoryProps {
   onClearHistory?: () => void;
 }
 
-const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({ 
-  results, 
-  onClearHistory 
-}) => {
+const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({ results, onClearHistory }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedResult, setSelectedResult] = useState<ProcessingResult | null>(null);
   const [localResults, setLocalResults] = useState<ProcessingResult[]>([]);
+  const [previewContent, setPreviewContent] = useState<{ headers: string[]; rows: string[][] } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load history from localStorage on component mount
     const savedHistory = localStorage.getItem('processing_history');
     if (savedHistory) {
       try {
-        const parsedHistory = JSON.parse(savedHistory);
-        setLocalResults(parsedHistory);
+        setLocalResults(JSON.parse(savedHistory));
       } catch (error) {
         console.error('Error loading history:', error);
       }
@@ -61,34 +59,67 @@ const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({
   }, []);
 
   useEffect(() => {
-    // Combine current results with saved history
-    const combinedResults = [...results, ...localResults];
-    const uniqueResults = combinedResults.filter((result, index, self) => 
-      index === self.findIndex(r => r.id === result.id)
-    );
-    
-    // Save to localStorage
-    localStorage.setItem('processing_history', JSON.stringify(uniqueResults));
-    setLocalResults(uniqueResults);
-  }, [results]);
+    if (results.length > 0) {
+        const combinedResults = [...results, ...localResults];
+        const uniqueResults = combinedResults.filter((result, index, self) => 
+            index === self.findIndex(r => r.id === result.id)
+        );
+        localStorage.setItem('processing_history', JSON.stringify(uniqueResults));
+        setLocalResults(uniqueResults);
+    }
+  }, [results, localResults]);
 
-  const handlePreview = (result: ProcessingResult) => {
+  const parseCSVForPreview = (csvContent: string): { headers: string[]; rows: string[][] } => {
+    const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) return { headers: [], rows: [] };
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '')) || [];
+    const rows = lines.slice(1, 11).map(line =>
+      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+    );
+    return { headers, rows };
+  };
+
+  const handlePreview = async (result: ProcessingResult) => {
+    if (!result.downloadUrl) {
+      setPreviewError('Download URL not available.');
+      return;
+    }
+
     setSelectedResult(result);
     setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewContent(null);
+
+    try {
+      const response = await fetch(result.downloadUrl);
+      if (!response.ok) {
+        throw new globalThis.Error(`HTTP error! status: ${response.status}`);
+      }
+      const csvText = await response.text();
+      const parsedData = parseCSVForPreview(csvText);
+      setPreviewContent(parsedData);
+    } catch (error: any) {
+      console.error("Failed to fetch preview content:", error);
+      setPreviewError("Could not load preview data.");
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   const handleDownload = (result: ProcessingResult) => {
-    if (result.downloadUrl) {
+    if (result.downloadUrl && result.fileName) {
       const link = document.createElement('a');
       link.href = result.downloadUrl;
-      link.download = `${result.type}_${result.fileName.split('.')[0]}_${Date.now()}.csv`;
+      const baseName = result.fileName.substring(0, result.fileName.lastIndexOf('.')) || result.fileName;
+      link.download = `${result.type}_${baseName}_${Date.now()}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
   };
 
-  const handleClearHistory = () => {
+  const handleClearHistoryLocal = () => {
     localStorage.removeItem('processing_history');
     setLocalResults([]);
     if (onClearHistory) {
@@ -96,141 +127,37 @@ const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({
     }
   };
 
-  const parseCSVForPreview = (csvContent: string) => {
-    const lines = csvContent.split('\n').filter(line => line.trim());
-    const headers = lines[0]?.split(',').map(h => h.trim().replace(/"/g, '')) || [];
-    const rows = lines.slice(1, 11).map(line => // Show only first 10 rows
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-    );
-    return { headers, rows };
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success':
-        return 'success';
-      case 'error':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'success':
-        return <CheckCircle />;
-      case 'error':
-        return <Error />;
-      default:
-        return <Schedule />;
-    }
-  };
-
-  const allResults = [...results, ...localResults].filter((result, index, self) => 
-    index === self.findIndex(r => r.id === result.id)
-  ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const getStatusColor = (status: string) => status === 'success' ? 'success' : 'error';
+  const getStatusIcon = (status: string) => status === 'success' ? <CheckCircle /> : <Error />;
+  
+  const allResults = [...localResults].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        sx={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(15px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          mb: 4,
-          textAlign: 'center',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-          <HistoryIcon sx={{ fontSize: 40, color: 'white', mr: 2 }} />
-          <Typography
-            variant="h4"
-            component="h2"
-            sx={{
-              color: 'white',
-              fontWeight: 700,
-              background: 'linear-gradient(45deg, #ffffff, #e3f2fd)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Processing History
-          </Typography>
-        </Box>
-        <Typography
-          variant="body1"
-          sx={{
-            color: 'rgba(255, 255, 255, 0.9)',
-            fontSize: '1.1rem',
-            mb: 2,
-          }}
-        >
-          View and manage your processed files
+      <Box sx={{ mb: 4, textAlign: 'center' }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
+          <HistoryIcon sx={{ verticalAlign: 'middle', mr: 1 }}/> Processing History
         </Typography>
-        
         {allResults.length > 0 && (
-          <Button
-            variant="outlined"
-            startIcon={<Delete />}
-            onClick={handleClearHistory}
-            sx={{
-              color: 'white',
-              borderColor: 'rgba(255, 255, 255, 0.5)',
-              '&:hover': {
-                borderColor: 'white',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              },
-            }}
-          >
+          <Button variant="outlined" startIcon={<Delete />} onClick={handleClearHistoryLocal} sx={{ mt: 2 }}>
             Clear History
           </Button>
         )}
       </Box>
 
-      {/* Results */}
       {allResults.length === 0 ? (
-        <Alert 
-          severity="info" 
-          sx={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            color: 'white',
-            '& .MuiAlert-icon': { color: 'white' },
-          }}
-        >
-          No processing history found. Start by uploading and processing some files!
-        </Alert>
+        <Alert severity="info">No processing history found.</Alert>
       ) : (
         <Grid container spacing={3}>
           {allResults.map((result) => (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={result.id}>
-              <Card
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(15px)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
-                    border: '1px solid rgba(255, 255, 255, 0.4)',
-                  },
-                }}
-              >
+            <Grid item xs={12} md={6} lg={4} key={result.id} component="div">
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <Chip
                       icon={getStatusIcon(result.status)}
                       label={result.type.toUpperCase()}
-                      color={getStatusColor(result.status) as any}
+                      color={getStatusColor(result.status)}
                       size="small"
                       sx={{ mr: 1 }}
                     />
@@ -238,46 +165,23 @@ const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({
                       {new Date(result.timestamp).toLocaleString()}
                     </Typography>
                   </Box>
-
                   <Typography variant="h6" component="h3" gutterBottom noWrap>
                     {result.fileName}
                   </Typography>
-
-                  {result.status === 'error' && result.errorMessage && (
-                    <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                      {result.errorMessage}
-                    </Typography>
-                  )}
-
-                  {result.status === 'success' && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      CSV data extracted successfully
-                    </Typography>
+                  {result.status === 'error' && (
+                    <Typography variant="body2" color="error">{result.errorMessage}</Typography>
                   )}
                 </CardContent>
-
                 {result.status === 'success' && (
                   <Box sx={{ p: 2, pt: 0 }}>
                     <Grid container spacing={1}>
-                      <Grid size={{ xs: 6 }}>
-                        <Button
-                          fullWidth
-                          variant="outlined"
-                          startIcon={<Visibility />}
-                          onClick={() => handlePreview(result)}
-                          size="small"
-                        >
+                      <Grid item xs={6} component="div">
+                        <Button fullWidth variant="outlined" startIcon={<Visibility />} onClick={() => handlePreview(result)} size="small">
                           Preview
                         </Button>
                       </Grid>
-                      <Grid size={{ xs: 6 }}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          startIcon={<Download />}
-                          onClick={() => handleDownload(result)}
-                          size="small"
-                        >
+                      <Grid item xs={6} component="div">
+                        <Button fullWidth variant="contained" startIcon={<Download />} onClick={() => handleDownload(result)} size="small">
                           Download
                         </Button>
                       </Grid>
@@ -290,53 +194,31 @@ const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({
         </Grid>
       )}
 
-      {/* Preview Dialog */}
-      <Dialog
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            maxHeight: '80vh',
-          },
-        }}
-      >
+      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="lg" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h6">
-              CSV Preview: {selectedResult?.fileName}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Showing first 10 rows
-            </Typography>
+            <Typography variant="h6">CSV Preview: {selectedResult?.fileName}</Typography>
+            <Typography variant="caption" color="text.secondary">Showing first 10 rows</Typography>
           </Box>
-          <IconButton onClick={() => setPreviewOpen(false)}>
-            <Close />
-          </IconButton>
+          <IconButton onClick={() => setPreviewOpen(false)}><Close /></IconButton>
         </DialogTitle>
-
         <DialogContent>
-          {selectedResult && (
+          {previewLoading && <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>}
+          {previewError && <Alert severity="error">{previewError}</Alert>}
+          {previewContent && !previewLoading && (
             <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
-                    {parseCSVForPreview(selectedResult.csvContent).headers.map((header, index) => (
-                      <TableCell key={index} sx={{ fontWeight: 'bold', backgroundColor: 'grey.100' }}>
-                        {header}
-                      </TableCell>
+                    {previewContent.headers.map((header, index) => (
+                      <TableCell key={index} sx={{ fontWeight: 'bold' }}>{header}</TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {parseCSVForPreview(selectedResult.csvContent).rows.map((row, rowIndex) => (
+                  {previewContent.rows.map((row, rowIndex) => (
                     <TableRow key={rowIndex} hover>
-                      {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex}>
-                          {cell}
-                        </TableCell>
-                      ))}
+                      {row.map((cell, cellIndex) => (<TableCell key={cellIndex}>{cell}</TableCell>))}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -344,20 +226,10 @@ const ProcessingHistory: React.FC<ProcessingHistoryProps> = ({
             </TableContainer>
           )}
         </DialogContent>
-
         <DialogActions>
-          <Button onClick={() => setPreviewOpen(false)}>
-            Close
-          </Button>
+          <Button onClick={() => setPreviewOpen(false)}>Close</Button>
           {selectedResult && (
-            <Button
-              variant="contained"
-              startIcon={<FileDownload />}
-              onClick={() => {
-                handleDownload(selectedResult);
-                setPreviewOpen(false);
-              }}
-            >
+            <Button variant="contained" startIcon={<FileDownload />} onClick={() => handleDownload(selectedResult)}>
               Download CSV
             </Button>
           )}

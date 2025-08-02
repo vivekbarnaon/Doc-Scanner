@@ -56,7 +56,7 @@ const FileProcessor: React.FC<FileProcessorProps> = ({
               fontSize: { xs: '2rem', md: '3rem' },
             }}
           >
-Transform Your Documents
+            Transform Your Documents
           </Typography>
           <Typography
             variant="h6"
@@ -121,7 +121,7 @@ Transform Your Documents
 
       {/* Processing Cards */}
       <Grid container spacing={4} sx={{ mb: 6 }}>
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4} component="div">
           <ProcessingCard
             type="imgtocsv"
             title="Image to CSV"
@@ -135,7 +135,7 @@ Transform Your Documents
           />
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4} component="div">
           <ProcessingCard
             type="pdfcsv"
             title="PDF to CSV"
@@ -149,7 +149,7 @@ Transform Your Documents
           />
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4} component="div">
           <ProcessingCard
             type="mergecsv"
             title="Merge CSV"

@@ -107,7 +107,7 @@ const FeatureShowcase: React.FC = () => {
 
       <Grid container spacing={4}>
         {features.map((feature, index) => (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }} key={index}>
+          <Grid item xs={12} md={6} lg={4} key={index} component="div">
             <Card
               sx={{
                 height: '100%',

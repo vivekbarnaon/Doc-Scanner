@@ -16,7 +16,6 @@ import {
   Home,
   AutoAwesome,
   History,
-  AccountCircle,
   Login,
 } from '@mui/icons-material';
 
