@@ -41,12 +41,9 @@ def generate_csv_from_image(model, image_data, prompt=None):
             {"mime_type": "image/jpeg", "data": image_data}
         ])
         return validate_and_clean_response(response.text)
-    except genai.types.GenerativeError as e:
-        logging.error(f" API Error: {str(e)}")
-        raise RuntimeError(f"API Error: {str(e)}") from e
     except Exception as e:
-        logging.error(f" Unexpected error: {str(e)}")
-        raise
+        logging.error(f" Gemini API Error: {str(e)}")
+        raise RuntimeError(f"Failed to process image: {str(e)}") from e
 
 def validate_and_clean_response(raw_response):
     """Validate and clean the API response"""
