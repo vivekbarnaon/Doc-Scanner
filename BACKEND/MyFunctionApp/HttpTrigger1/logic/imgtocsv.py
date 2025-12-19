@@ -14,7 +14,7 @@ def initialize_gemini_model():
             raise ValueError("GEMINI_API_KEY environment variable is required")
             
         genai.configure(api_key=api_key)
-        return genai.GenerativeModel('gemini-2.0-flash')
+        return genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
         logging.error(f" Failed to initialize Gemini model: {str(e)}")
         raise
