@@ -3,6 +3,7 @@ import google.generativeai as genai
 import os
 import logging
 from dotenv import load_dotenv
+from PIL import Image
 
 def initialize_gemini_model():
     """Initialize the Gemini model with API key from environment variables"""
@@ -14,20 +15,19 @@ def initialize_gemini_model():
             raise ValueError("GEMINI_API_KEY environment variable is required")
             
         genai.configure(api_key=api_key)
-        return genai.GenerativeModel('gemini-1.5-flash')
+        return genai.GenerativeModel('gemini-1.5-flash-8b')
     except Exception as e:
         logging.error(f" Failed to initialize Gemini model: {str(e)}")
         raise
 
 def load_image_data(image_path):
-    """Load image data from file path"""
+    """Load image data from file path as PIL Image"""
     if not os.path.exists(image_path):
         logging.error(f" Image file not found at {image_path}")
         raise FileNotFoundError(f"Image file not found at {image_path}")
     
     try:
-        with open(image_path, "rb") as file:
-            return file.read()
+        return Image.open(image_path)
     except Exception as e:
         logging.error(f" Failed to read image file: {str(e)}")
         raise
@@ -38,7 +38,7 @@ def generate_csv_from_image(model, image_data, prompt=None):
     try:
         response = model.generate_content([
             prompt or default_prompt,
-            {"mime_type": "image/jpeg", "data": image_data}
+            image_data
         ])
         return validate_and_clean_response(response.text)
     except Exception as e:
