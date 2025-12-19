@@ -1,8 +1,8 @@
 // API Configuration
 export const API_CONFIG = {
   // Base URLs
-  API_URL: process.env.REACT_APP_API_URL || 'http://localhost:7071/api',
-  BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:7071',
+  API_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api',
+  BACKEND_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api',
   
   // Azure Function Key
   AZURE_FUNCTION_KEY: process.env.REACT_APP_AZURE_FUNCTION_KEY,
