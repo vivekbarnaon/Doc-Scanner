@@ -4,4 +4,4 @@ pdfplumber
 pandas
 protobuf
 python-dotenv
-google-generativeai
+requests
