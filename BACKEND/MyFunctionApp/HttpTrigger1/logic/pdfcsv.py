@@ -1,10 +1,6 @@
 import os
 import pandas as pd
-from gmft.pdf_bindings import PyPDFium2Document
-from gmft import TableDetector, AutoTableFormatter, AutoFormatConfig
-
-# Detector ko ek baar hi initialize karna behtar hai
-detector = TableDetector()
+import pdfplumber
 
 def pdf_to_csv(source_path, output_path):
     """
@@ -17,31 +13,29 @@ def pdf_to_csv(source_path, output_path):
     print(f"Processing PDF: {source_path}")
     
     try:
-        doc = PyPDFium2Document(source_path)
-        
         all_tables = []
-        for page in doc:
-            # detector.extract() ek list return karta hai, isliye += ka istemaal karein
-            all_tables += detector.extract(page)
+        
+        with pdfplumber.open(source_path) as pdf:
+            for page in pdf.pages:
+                tables = page.extract_tables()
+                if tables:
+                    all_tables.extend(tables)
 
-        # Confidence score ke hisaab se tables filter karein
-        filtered_tables = [item for item in all_tables if item.confidence_score < 1]
-
-        if not filtered_tables:
+        if not all_tables:
             print("No tables found in the PDF.")
             # Ek khaali CSV file bana dein taaki error na aaye
             pd.DataFrame().to_csv(output_path, index=False)
             return
 
         list_of_dfs = []
-        formatter = AutoTableFormatter()
-        formatter.config = AutoFormatConfig()
-
-        print(f"Found {len(filtered_tables)} tables. Combining them into one CSV.")
-        for table in filtered_tables:
-            formatted_table = formatter.extract(table)
-            df = formatted_table.df().fillna("")
-            list_of_dfs.append(df)
+        
+        print(f"Found {len(all_tables)} tables. Combining them into one CSV.")
+        for table in all_tables:
+            if table and len(table) > 0:
+                # Convert table to DataFrame
+                df = pd.DataFrame(table[1:], columns=table[0])
+                df = df.fillna("")
+                list_of_dfs.append(df)
         
         # Saare DataFrames ko ek mein jodein
         if list_of_dfs:

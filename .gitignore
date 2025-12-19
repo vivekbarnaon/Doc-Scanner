@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+FRONTEND/node_modules/
+BACKEND/MyFunctionApp/.venv/
+BACKEND/MyFunctionApp/.python_packages/
+BACKEND/MyFunctionApp/__pycache__/
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+FRONTEND/.env
+BACKEND/MyFunctionApp/.env
+BACKEND/MyFunctionApp/local.settings.json
+
+# Build outputs
+FRONTEND/build/
+BACKEND/MyFunctionApp/output/
+
+# System files
+.DS_Store
+.vscode/
+*.pyc
+*.log
+*.swp
+
+# Azure Functions
+BACKEND/MyFunctionApp/.funcignore

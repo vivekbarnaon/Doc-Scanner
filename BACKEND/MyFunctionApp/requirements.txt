@@ -1,4 +1,6 @@
-gmft
+azure-functions
+azure-storage-blob
+pdfplumber
 pandas
 protobuf
 python-dotenv

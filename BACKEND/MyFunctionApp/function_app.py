@@ -41,7 +41,7 @@ def create_error_response(message, status_code=400):
 
 # --- API Functions ---
 
-@app.route(route="upload", methods=["POST", "OPTIONS"])
+@app.route(route="upload", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def upload_file(req: func.HttpRequest) -> func.HttpResponse:
     """Handles file upload and saves it directly to Azure Blob Storage."""
     if req.method == "OPTIONS":
@@ -105,7 +105,7 @@ def process_and_upload(file_id: str, source_container: str, dest_container: str,
     return processed_blob_name
 
 
-@app.route(route="process/image-to-csv", methods=["POST", "OPTIONS"])
+@app.route(route="process/image-to-csv", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def process_image_to_csv(req: func.HttpRequest) -> func.HttpResponse:
     """Processes an image from blob storage."""
     if req.method == "OPTIONS":
@@ -133,7 +133,7 @@ def process_image_to_csv(req: func.HttpRequest) -> func.HttpResponse:
         return create_error_response(f"An unexpected error occurred: {e}", 500)
 
 
-@app.route(route="process/pdf-to-csv", methods=["POST", "OPTIONS"])
+@app.route(route="process/pdf-to-csv", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def process_pdf_to_csv(req: func.HttpRequest) -> func.HttpResponse:
     """Processes a PDF from blob storage."""
     if req.method == "OPTIONS":
@@ -161,7 +161,7 @@ def process_pdf_to_csv(req: func.HttpRequest) -> func.HttpResponse:
         return create_error_response(f"An unexpected error occurred: {e}", 500)
 
 
-@app.route(route="process/merge-csv", methods=["POST", "OPTIONS"])
+@app.route(route="process/merge-csv", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def process_merge_csv(req: func.HttpRequest) -> func.HttpResponse:
     """Handles merging two CSV files."""
     if req.method == "OPTIONS":
@@ -220,7 +220,7 @@ def process_merge_csv(req: func.HttpRequest) -> func.HttpResponse:
             shutil.rmtree(temp_dir)
 
 
-@app.route(route="download/{filename}", methods=["GET"])
+@app.route(route="download/{filename}", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def download_file(req: func.HttpRequest) -> func.HttpResponse:
     """Downloads a processed file from Azure Blob Storage."""
     logging.info("Download endpoint triggered.")

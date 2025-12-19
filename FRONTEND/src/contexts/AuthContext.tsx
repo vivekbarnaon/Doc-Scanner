@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   UserCredential,
 } from 'firebase/auth';
-import { auth, googleProvider } from '../config/firebase';
+import { auth, googleProvider, isFirebaseConfigured } from '../config/firebase';
 
 // Types
 interface AuthContextType {
@@ -39,6 +39,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Sign in with Google
   const signInWithGoogle = async (): Promise<UserCredential> => {
+    if (!isFirebaseConfigured || !auth || !googleProvider) {
+      throw new Error('Firebase authentication is not configured');
+    }
     try {
       const result = await signInWithPopup(auth, googleProvider);
       return result;
@@ -50,6 +53,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Sign out
   const logout = async (): Promise<void> => {
+    if (!auth) {
+      return;
+    }
     try {
       await signOut(auth);
     } catch (error) {
@@ -60,6 +66,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Listen for authentication state changes
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false);
+      return;
+    }
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
