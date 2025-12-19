@@ -2,11 +2,11 @@ import axios from 'axios';
 import { ProcessingResult } from '../types/types';
 
 // --- Configuration ---
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:7071';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api';
 const AZURE_FUNCTION_KEY = process.env.REACT_APP_AZURE_FUNCTION_KEY;
 
 if (!API_BASE_URL) {
-  throw new Error("REACT_APP_API_URL is not defined in the .env file. Please add it.");
+  throw new Error("REACT_APP_API_BASE_URL is not defined in the .env file. Please add it.");
 }
 
 const api = axios.create({
@@ -47,7 +47,7 @@ export const uploadFile = async (file: File): Promise<{ file_id: string; filenam
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await api.post('/api/upload', formData, {
+    const response = await api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
@@ -72,7 +72,7 @@ export const processUploadedFile = async (
   type: 'imgtocsv' | 'pdfcsv'
 ): Promise<ProcessingResult> => {
   try {
-    const endpoint = type === 'imgtocsv' ? '/api/process/image-to-csv' : '/api/process/pdf-to-csv';
+    const endpoint = type === 'imgtocsv' ? '/process/image-to-csv' : '/process/pdf-to-csv';
     const response = await api.post(endpoint, { file_id: fileId });
 
     if (response.data.error) {
@@ -102,7 +102,7 @@ export const mergeCsvFiles = async (baseFile: File, newFile: File): Promise<Proc
         formData.append('base_file', baseFile);
         formData.append('new_file', newFile);
 
-        const response = await api.post('/api/process/merge-csv', formData, {
+        const response = await api.post('/process/merge-csv', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
 
