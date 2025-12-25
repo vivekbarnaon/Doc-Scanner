@@ -125,7 +125,7 @@ def process_image_to_csv(req: func.HttpRequest) -> func.HttpResponse:
             "message": "Image processed successfully.",
             "file_id": file_id,
             "output_filename": output_filename,
-            "download_url": f"/api/download/{output_filename}"
+            "download_url": f"/download/{output_filename}"
         })
     except FileNotFoundError as e:
         return create_error_response(str(e), 404)
@@ -153,7 +153,7 @@ def process_pdf_to_csv(req: func.HttpRequest) -> func.HttpResponse:
             "message": "PDF processed successfully.",
             "file_id": file_id,
             "output_filename": output_filename,
-            "download_url": f"/api/download/{output_filename}"
+            "download_url": f"/download/{output_filename}"
         })
     except FileNotFoundError as e:
         return create_error_response(str(e), 404)
@@ -206,9 +206,9 @@ def process_merge_csv(req: func.HttpRequest) -> func.HttpResponse:
         
         return create_response({
             "success": True,
-            "message": "Files merged successfully.",
-            "output_filename": merged_blob_name,
-            "download_url": f"/api/download/{merged_blob_name}"
+            "message": "CSVs merged successfully.",
+            "merged_filename": merged_blob_name,
+            "download_url": f"/download/{merged_blob_name}"
         })
 
     except Exception as e:
@@ -235,13 +235,16 @@ def download_file(req: func.HttpRequest) -> func.HttpResponse:
 
         file_bytes = blob_client.download_blob().readall()
 
+        response_headers = {
+            "Content-Type": "text/csv",
+            "Content-Disposition": f"attachment; filename={filename}",
+            **CORS_HEADERS
+        }
+        
         return func.HttpResponse(
             body=file_bytes,
             status_code=200,
-            headers={
-                "Content-Type": "text/csv",
-                "Content-Disposition": f"attachment; filename={filename}"
-            }
+            headers=response_headers
         )
     except Exception as e:
         logging.error(f"Download error: {e}")

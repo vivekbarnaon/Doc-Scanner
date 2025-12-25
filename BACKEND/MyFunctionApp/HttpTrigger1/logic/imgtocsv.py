@@ -37,7 +37,7 @@ def generate_csv_from_image(api_key, image_data, prompt=None):
     """Generate CSV data from image using Gemini REST API"""
     default_prompt = "Convert this image table to CSV format. Only output the raw CSV data without any markdown formatting or additional text."
     
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={api_key}"
     
     payload = {
         "contents": [{
