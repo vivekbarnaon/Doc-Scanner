@@ -1,8 +1,8 @@
 // API Configuration
 export const API_CONFIG = {
   // Base URLs
-  API_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api',
-  BACKEND_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000',
+  API_URL: 'https://doc-scanner-pbzu.onrender.com/api',
+  BACKEND_URL: 'https://doc-scanner-pbzu.onrender.com',
   
   // Supabase Configuration
   SUPABASE_URL: process.env.REACT_APP_SUPABASE_URL,
