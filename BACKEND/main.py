@@ -41,13 +41,14 @@ OUTPUTS_DIR = os.path.join(STORAGE_DIR, "outputs")
 os.makedirs(UPLOADS_DIR, exist_ok=True)
 os.makedirs(OUTPUTS_DIR, exist_ok=True)
 
-# --- CORS Configuration for Frontend ---
+# --- CORS Configuration for Production ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Render pe deploy karne ke baad Specific URL daal sakte ho
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 @app.get("/")
