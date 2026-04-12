@@ -13,13 +13,9 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import {
-  Google as GoogleIcon,
-  LockOutlined,
-  Security,
-  VerifiedUser,
-} from '@mui/icons-material';
+import { Google as GoogleIcon, LockOutlined, Security, VerifiedUser } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { isFirebaseConfigured } from '../config/firebase';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -110,6 +106,13 @@ const LoginPage: React.FC = () => {
               </Typography>
             </Box>
 
+            {/* Firebase configuration error */}
+            {!isFirebaseConfigured && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                Firebase authentication is not configured. Please set up your environment variables in .env file.
+              </Alert>
+            )}
+
             {/* Error Alert */}
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
@@ -123,7 +126,7 @@ const LoginPage: React.FC = () => {
               variant="outlined"
               size="large"
               onClick={handleGoogleLogin}
-              disabled={loading}
+              disabled={loading || !isFirebaseConfigured}
               startIcon={loading ? <CircularProgress size={20} /> : <GoogleIcon />}
               sx={{
                 py: 1.5,

@@ -25,11 +25,12 @@ class CSVMatcher:
         # Get API key from environment variables
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            logging.warning(" GEMINI_API_KEY not found in environment variables")
-            api_key = "AIzaSyDEYkoLR5ESvf1h1hetea8p8ILPxBKVL2Q"  # Fallback for testing
+            logging.error("GEMINI_API_KEY not found in .env file!")
+            # Do not use a hardcoded fallback in production
+            raise ValueError("GEMINI_API_KEY is required for CSV Matching")
             
         genai.configure(api_key=api_key)
-        self.gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+        self.gemini_model = genai.GenerativeModel("models/gemini-flash-latest")
 
     def ensure_directories(self):
         """Create folders if they don't exist"""
