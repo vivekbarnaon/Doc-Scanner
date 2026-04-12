@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+pdfplumber
+pandas
+requests
+openpyxl
+jinja2
+aiohttp
+gunicorn
+supabase
+google-generativeai
+pdf2image
+Pillow
+urllib3<2.0.0
+ 

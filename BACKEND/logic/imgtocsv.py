@@ -6,6 +6,7 @@ import requests
 from dotenv import load_dotenv
 from PIL import Image
 import io
+import google.generativeai as genai
 
 def initialize_gemini_model():
     """Initialize the Gemini API key from environment variables"""
@@ -34,41 +35,28 @@ def load_image_data(image_path):
         raise
 
 def generate_csv_from_image(api_key, image_data, prompt=None):
-    """Generate CSV data from image using Gemini REST API"""
+    """Generate CSV data from image using Gemini SDK (fixing 404 REST issue)"""
+    genai.configure(api_key=api_key)
+    
     default_prompt = "Convert this image table to CSV format. Only output the raw CSV data without any markdown formatting or additional text."
     
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
-    
-    payload = {
-        "contents": [{
-            "parts": [
-                {"text": prompt or default_prompt},
-                {
-                    "inline_data": {
-                        "mime_type": "image/jpeg",
-                        "data": image_data
-                    }
-                }
-            ]
-        }]
-    }
-    
     try:
-        response = requests.post(url, json=payload, timeout=60)
-        response.raise_for_status()
-        result = response.json()
+        # Standard stable model based on verified list_models() output
+        model = genai.GenerativeModel('models/gemini-flash-latest')
         
-        if 'candidates' in result and len(result['candidates']) > 0:
-            text = result['candidates'][0]['content']['parts'][0]['text']
-            return validate_and_clean_response(text)
+        # Using the direct parts structure which is most stable
+        response = model.generate_content([
+            prompt or default_prompt,
+            {'mime_type': 'image/jpeg', 'data': image_data}
+        ])
+        
+        if response.text:
+            return validate_and_clean_response(response.text)
         else:
-            raise ValueError("No response generated from Gemini API")
-    except requests.exceptions.RequestException as e:
-        logging.error(f" Gemini API Request Error: {str(e)}")
-        raise RuntimeError(f"Failed to process image: {str(e)}") from e
+            raise ValueError("No response text generated from Gemini SDK")
     except Exception as e:
-        logging.error(f" Gemini API Error: {str(e)}")
-        raise RuntimeError(f"Failed to process image: {str(e)}") from e
+        logging.error(f" Gemini SDK Error: {str(e)}")
+        raise RuntimeError(f"Failed to process image via SDK: {str(e)}") from e
 
 def validate_and_clean_response(raw_response):
     """Validate and clean the API response"""

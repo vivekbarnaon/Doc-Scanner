@@ -1,24 +1,21 @@
 // API Configuration
 export const API_CONFIG = {
   // Base URLs
-  API_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api',
-  BACKEND_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:7071/api',
+  API_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api',
+  BACKEND_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000',
   
-  // Azure Function Key
-  AZURE_FUNCTION_KEY: process.env.REACT_APP_AZURE_FUNCTION_KEY,
+  // Supabase Configuration
+  SUPABASE_URL: process.env.REACT_APP_SUPABASE_URL,
+  SUPABASE_KEY: process.env.REACT_APP_SUPABASE_PUBLISHABLE_KEY,
   
   // Request timeout (5 minutes for file processing)
   TIMEOUT: 300000,
   
-  // API Endpoints
+  // API Endpoints (FastAPI match)
   ENDPOINTS: {
-    UPLOAD: '/upload',
-    PROCESS: {
-      IMAGE_TO_CSV: '/process/image-to-csv',
-      PDF_TO_CSV: '/process/pdf-to-csv',
-      MERGE_CSV: '/process/merge-csv',
-    },
-    HEALTH: '/health',
+    UPLOAD: '/api/upload',
+    PROCESS: '/api/process',
+    DOWNLOAD: '/api/download',
   },
   
   // File upload limits
@@ -32,13 +29,8 @@ export const API_CONFIG = {
 export const getApiHeaders = (contentType?: string) => {
   const headers: Record<string, string> = {};
   
-  if (contentType) {
+  if (contentType && contentType !== 'multipart/form-data') {
     headers['Content-Type'] = contentType;
-  }
-  
-  // Add Azure Function key if available
-  if (API_CONFIG.AZURE_FUNCTION_KEY) {
-    headers['x-functions-key'] = API_CONFIG.AZURE_FUNCTION_KEY;
   }
   
   return headers;
@@ -46,7 +38,7 @@ export const getApiHeaders = (contentType?: string) => {
 
 // Helper function to check if backend is configured
 export const isBackendConfigured = (): boolean => {
-  return !!(API_CONFIG.API_URL && API_CONFIG.API_URL !== 'http://localhost:7071/api');
+  return true; // We are now local or Render
 };
 
 // Helper function to get environment info
@@ -54,8 +46,7 @@ export const getEnvironmentInfo = () => {
   return {
     apiUrl: API_CONFIG.API_URL,
     backendUrl: API_CONFIG.BACKEND_URL,
-    hasAzureKey: !!API_CONFIG.AZURE_FUNCTION_KEY,
-    isProduction: API_CONFIG.API_URL.includes('azurewebsites.net'),
+    isProduction: !API_CONFIG.API_URL.includes('localhost'),
     isLocal: API_CONFIG.API_URL.includes('localhost'),
   };
 };
